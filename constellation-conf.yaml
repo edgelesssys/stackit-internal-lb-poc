@@ -1,0 +1,73 @@
+version: v4 # Schema version of this configuration file.
+image: ref/main/stream/console/v2.21.0-pre.0.20241204083014-ab2782a2a2be # Machine image version used to create Constellation nodes.
+name: e2e-test # Name of the cluster.
+kubernetesVersion: v1.29.11 # Kubernetes version to be installed into the cluster.
+microserviceVersion: v2.21.0-pre.0.20241204085043-f0b5a3c8e6d4 # Microservice version to be installed into the cluster. Defaults to the version of the CLI.
+debugCluster: false # DON'T USE IN PRODUCTION: enable debug mode and use debug images.
+customEndpoint: "" # Optional custom endpoint (DNS name) for the Constellation API server.
+internalLoadBalancer: false # Flag to enable/disable the internal load balancer. If enabled, the Constellation is only accessible from within the VPC.
+serviceCIDR: 10.96.0.0/12 # The Kubernetes Service CIDR to be used for the cluster. This value will only be used during the first initialization of the Constellation.
+# Additional tags that are applied to created resources.
+tags:
+    workflow: "11659782742"
+# Supported cloud providers and their specific configurations.
+provider:
+    # Configuration for OpenStack as provider.
+    openstack:
+        cloud: stackit # OpenStack cloud name to select from "clouds.yaml". Only required if config file for OpenStack is used. Fallback authentication uses environment variables. For details see: https://docs.openstack.org/openstacksdk/latest/user/config/configuration.html.
+        cloudsYAMLPath: "" # Path to OpenStack "clouds.yaml" file. Only required if automatic detection fails.
+        availabilityZone: eu01-1 # Availability zone to place the VMs in. For details see: https://docs.openstack.org/nova/latest/admin/availability-zones.html
+        floatingIPPoolID: 970ace5c-458f-484a-a660-0903bcfd91ad # Floating IP pool to use for the VMs. For details see: https://docs.openstack.org/ocata/user-guide/cli-manage-ip-addresses.html
+        stackitProjectID: 8a694a67-be5a-4d2f-b109-b2128a7c991c # STACKITProjectID is the ID of the STACKIT project where a user resides.
+        regionName: RegionOne # description: |
+        deployYawolLoadBalancer: true # Deploy Yawol loadbalancer. For details see: https://github.com/stackitcloud/yawol
+        yawolImageID: bcd6c13e-75d1-4c3f-bf0f-8f83580cc1be # OpenStack OS image used by the yawollet. For details see: https://github.com/stackitcloud/yawol
+        yawolFlavorID: 3b11b27e-6c73-470d-b595-1d85b95a8cdf # OpenStack flavor id used for yawollets. For details see: https://github.com/stackitcloud/yawol
+        deployCSIDriver: true # Deploy Cinder CSI driver with on-node encryption. For details see: https://docs.edgeless.systems/constellation/architecture/encrypted-storage
+# Node groups to be created in the cluster.
+nodeGroups:
+    control_plane_default:
+        role: control-plane # Role of the nodes in this group. Valid values are "control-plane" and "worker".
+        zone: eu01-1 # Availability zone to place the VMs in.
+        instanceType: m1a.4cd # VM instance type to use for the nodes.
+        stateDiskSizeGB: 10 # Size (in GB) of a node's disk to store the non-volatile state.
+        stateDiskType: storage_premium_perf8 # Type of a node's state disk. The type influences boot time and I/O performance.
+        initialCount: 1 # Number of nodes to be initially created.
+    worker_default:
+        role: worker # Role of the nodes in this group. Valid values are "control-plane" and "worker".
+        zone: eu01-1 # Availability zone to place the VMs in.
+        instanceType: m1a.4cd # VM instance type to use for the nodes.
+        stateDiskSizeGB: 10 # Size (in GB) of a node's disk to store the non-volatile state.
+        stateDiskType: storage_premium_perf8 # Type of a node's state disk. The type influences boot time and I/O performance.
+        initialCount: 1 # Number of nodes to be initially created.
+# Configuration for attestation validation. This configuration provides sensible defaults for the Constellation version it was created for.
+# See the docs for an overview on attestation: https://docs.edgeless.systems/constellation/architecture/attestation
+attestation:
+    # QEMU vTPM attestation.
+    qemuVTPM:
+        # Expected TPM measurements.
+        measurements:
+            4:
+                expected: ebe8f0acec0259b70a727dd9c2023c65e09fc6ca2114e5399fb25ac4fe8362c5
+                warnOnly: false
+            8:
+                expected: "0000000000000000000000000000000000000000000000000000000000000000"
+                warnOnly: false
+            9:
+                expected: 51bd3f490b6c5c1c08988481a2c15da8940e7cf7f80fb95e5b55adb0d7c3357f
+                warnOnly: false
+            11:
+                expected: 538f3f723fa2f8e95df52b01cf16c97b016ec42408d13954342417c408f24b8c
+                warnOnly: false
+            12:
+                expected: "0000000000000000000000000000000000000000000000000000000000000000"
+                warnOnly: false
+            13:
+                expected: "0000000000000000000000000000000000000000000000000000000000000000"
+                warnOnly: false
+            14:
+                expected: "0000000000000000000000000000000000000000000000000000000000000000"
+                warnOnly: true
+            15:
+                expected: "0000000000000000000000000000000000000000000000000000000000000000"
+                warnOnly: false
