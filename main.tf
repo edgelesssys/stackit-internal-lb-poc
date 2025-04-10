@@ -12,23 +12,24 @@ terraform {
 }
 
 locals {
-  name                       = "constell"
-  image_version              = "v2.22.0" // replace with the version you want to use
-  kubernetes_version         = "v1.31.7" // replace with the version you want to use
-  microservice_version       = "v2.22.0" // replace with the version you want to use
-  csp                        = "stackit"
-  attestation_variant        = "qemu-vtpm"
-  zone                       = "eu01-1"
-  cloud                      = "stackit"
-  clouds_yaml_path           = "~/.config/openstack/clouds.yaml"
-  floating_ip_pool_id        = "970ace5c-458f-484a-a660-0903bcfd91ad"
-  stackit_project_id         = "8a694a67-be5a-4d2f-b109-b2128a7c991c" // replace with the STACKIT project id
-  control_plane_count        = 1
-  worker_count               = 1
-  instance_type              = "m1a.8cd"
-  deploy_yawol_load_balancer = true
-  yawol_image_id             = "bcd6c13e-75d1-4c3f-bf0f-8f83580cc1be"
-  yawol_flavor_id            = "3b11b27e-6c73-470d-b595-1d85b95a8cdf"
+  name                        = "constell"
+  image_version               = "v2.22.0" // replace with the version you want to use
+  kubernetes_version          = "v1.31.7" // replace with the version you want to use
+  microservice_version        = "v2.22.0" // replace with the version you want to use
+  csp                         = "stackit"
+  attestation_variant         = "qemu-vtpm"
+  zone                        = "eu01-1"
+  cloud                       = "stackit"
+  clouds_yaml_path            = "~/.config/openstack/clouds.yaml"
+  floating_ip_pool_id         = "970ace5c-458f-484a-a660-0903bcfd91ad"
+  stackit_project_id          = "8a694a67-be5a-4d2f-b109-b2128a7c991c" // replace with the STACKIT project id
+  control_plane_count         = 1
+  worker_count                = 1
+  instance_type_worker        = "m1a.8cd"
+  instance_type_control_plane = "m1a.8cd"
+  deploy_yawol_load_balancer  = true
+  yawol_image_id              = "bcd6c13e-75d1-4c3f-bf0f-8f83580cc1be"
+  yawol_flavor_id             = "3b11b27e-6c73-470d-b595-1d85b95a8cdf"
 
   master_secret      = random_bytes.master_secret.hex
   master_secret_salt = random_bytes.master_secret_salt.hex
@@ -53,7 +54,7 @@ module "stackit_infrastructure" {
   node_groups = {
     control_plane_default = {
       role            = "control-plane"
-      flavor_id       = local.instance_type
+      flavor_id       = local.instance_type_control_plane
       state_disk_size = 30
       state_disk_type = "storage_premium_perf6"
       initial_count   = local.control_plane_count
@@ -61,7 +62,7 @@ module "stackit_infrastructure" {
     },
     worker_default = {
       role            = "worker"
-      flavor_id       = local.instance_type
+      flavor_id       = local.instance_type_worker
       state_disk_size = 30
       state_disk_type = "storage_premium_perf6"
       initial_count   = local.worker_count
@@ -74,6 +75,11 @@ module "stackit_infrastructure" {
   openstack_clouds_yaml_path = local.clouds_yaml_path
   floating_ip_pool_id        = local.floating_ip_pool_id
   stackit_project_id         = local.stackit_project_id
+  cidr_vpc_subnet_nodes      = "192.168.178.0/24"
+  enable_acl                 = false
+  extra_acl = [
+    "91.191.179.44/32", # Replace with ranges that should be allowed.
+  ]
 }
 
 data "constellation_attestation" "foo" {

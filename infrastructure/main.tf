@@ -45,9 +45,8 @@ locals {
     var.debug ? [{ name = "debugd", port = "4000", health_check = "TCP" }] : [],
     var.emergency_ssh ? [{ name = "ssh", port = "22", health_check = "TCP" }] : [],
   ])
-  cidr_vpc_subnet_nodes = "192.168.178.0/24"
-  cidr_vpc_subnet_lbs   = "192.168.177.0/24"
-  tags                  = concat(["constellation-uid-${local.uid}"], var.additional_tags)
+  cidr_vpc_subnet_lbs = "192.168.177.0/24"
+  tags                = concat(["constellation-uid-${local.uid}"], var.additional_tags)
   identity_service = [
     for entry in data.openstack_identity_auth_scope_v3.scope.service_catalog :
     entry if entry.type == "identity"
@@ -93,7 +92,7 @@ resource "openstack_networking_subnet_v2" "vpc_subnetwork" {
   name        = local.name
   description = "Constellation VPC subnetwork"
   network_id  = openstack_networking_network_v2.vpc_network.id
-  cidr        = local.cidr_vpc_subnet_nodes
+  cidr        = var.cidr_vpc_subnet_nodes
   dns_nameservers = [
     "1.1.1.1",
     "8.8.8.8",
@@ -182,7 +181,7 @@ resource "openstack_networking_secgroup_rule_v2" "tcp_between_nodes" {
   protocol          = "tcp"
   port_range_min    = 0
   port_range_max    = 0
-  remote_ip_prefix  = local.cidr_vpc_subnet_nodes
+  remote_ip_prefix  = var.cidr_vpc_subnet_nodes
   security_group_id = openstack_networking_secgroup_v2.vpc_secgroup.id
 }
 
@@ -193,7 +192,7 @@ resource "openstack_networking_secgroup_rule_v2" "udp_between_nodes" {
   protocol          = "udp"
   port_range_min    = 0
   port_range_max    = 0
-  remote_ip_prefix  = local.cidr_vpc_subnet_nodes
+  remote_ip_prefix  = var.cidr_vpc_subnet_nodes
   security_group_id = openstack_networking_secgroup_v2.vpc_secgroup.id
 }
 
@@ -281,11 +280,10 @@ module "stackit_loadbalancer" {
   ports = {
     for port in local.control_plane_named_ports : port.name => port.port
   }
-  acl = [
-    "91.191.179.44/16", # Replace with ranges that should be allowed.
-    local.cidr_vpc_subnet_nodes,
-    local.cidr_vpc_subnet_lbs,
-  ]
+  enable_acl = var.enable_acl
+  acl = concat([
+    var.cidr_vpc_subnet_nodes,
+  ], var.extra_acl)
 }
 
 moved {

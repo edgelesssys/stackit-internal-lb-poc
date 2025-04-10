@@ -32,7 +32,7 @@ output "name" {
 }
 
 output "ip_cidr_node" {
-  value       = local.cidr_vpc_subnet_nodes
+  value       = var.cidr_vpc_subnet_nodes
   description = "CIDR block of the node network."
 }
 

@@ -45,6 +45,6 @@ resource "stackit_loadbalancer" "loadbalancer" {
   ]
   external_address = var.external_address
   options = {
-    acl = var.acl
+    acl = var.enable_acl ? var.acl : null
   }
 }

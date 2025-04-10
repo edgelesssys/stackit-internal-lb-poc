@@ -77,3 +77,23 @@ variable "emergency_ssh" {
   default     = false
   description = "Wether to expose the SSH port through the public load balancer."
 }
+
+# PoC-specific variables
+
+variable "cidr_vpc_subnet_nodes" {
+  type        = string
+  default     = "192.168.178.0/24"
+  description = "CIDR of the VPC subnet for the nodes."
+}
+
+variable "enable_acl" {
+  type        = bool
+  default     = false
+  description = "Enable ACL rules for the load balancer."
+}
+
+variable "extra_acl" {
+  type        = list(string)
+  default     = []
+  description = "Additional ACL rules for the load balancer."
+}

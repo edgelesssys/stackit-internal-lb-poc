@@ -29,6 +29,11 @@ variable "stackit_project_id" {
   description = "STACKIT project ID."
 }
 
+variable "enable_acl" {
+  type        = bool
+  description = "Enable ACL rules for the load balancer."
+}
+
 variable "acl" {
   type        = list(string)
   description = "Allowed source IP ranges that can access the load balancer."
